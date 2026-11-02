@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Technologies Quiz</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
+    body { min-height:100vh; display:flex; justify-content:center; align-items:center;
+      padding:15px; background:linear-gradient(135deg,#4f46e5,#9333ea); }
+    .quiz { width:100%; max-width:500px; background:#fff; padding:28px; border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.3); }
+    h1 { text-align:center; color:#4f46e5; margin-bottom:15px; }
+    .info { display:flex; justify-content:space-between; color:#555; font-size:14px; margin-bottom:8px; }
+    .progress { background:#e5e7eb; height:8px; border-radius:8px; margin-bottom:20px; }
+    #bar { background:#4f46e5; height:100%; width:0; border-radius:8px; transition:.3s; }
+    #question { font-size:20px; margin-bottom:18px; line-height:1.4; }
+    .option { display:block; width:100%; text-align:left; padding:13px; margin-bottom:10px;
+      border:2px solid #ddd; border-radius:10px; background:#fff; font-size:16px; cursor:pointer; }
+    .option:hover:enabled { border-color:#4f46e5; background:#eef2ff; }
+    .option.correct { background:#dcfce7; border-color:#16a34a; }
+    .option.wrong { background:#fee2e2; border-color:#dc2626; }
+    #nextBtn, #restartBtn { width:100%; padding:13px; border:none; border-radius:10px;
+      background:#4f46e5; color:#fff; font-size:16px; cursor:pointer; margin-top:5px; }
+    #nextBtn:disabled { background:#a5b4fc; cursor:not-allowed; }
+    #result { text-align:center; display:none; }
+    #result h2 { color:#4f46e5; margin-bottom:10px; }
+    #score { font-size:48px; font-weight:bold; margin:10px 0; }
+    #message { color:#555; margin-bottom:15px; }
+  </style>
+</head>
+<body>
+  <div class="quiz">
+    <h1>🧠 Web Technologies Quiz</h1>
+
+    <div id="quizBox">
+      <div class="info">
+        <span id="qNo">Question 1 / 15</span>
+        <span id="scoreNow">Score: 0</span>
+      </div>
+      <div class="progress"><div id="bar"></div></div>
+      <div id="question"></div>
+      <div id="options"></div>
+      <button id="nextBtn" disabled>Next</button>
+    </div>
+
+    <div id="result">
+      <h2>Quiz Completed!</h2>
+      <div id="score"></div>
+      <p id="message"></p>
+      <button id="restartBtn">Restart Quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // Questions array: each question has text, options and index of the correct answer
+    const questions = [
+      { q: "What does HTML stand for?",
+        options: ["Hyper Text Markup Language", "High Text Machine Language", "Hyper Tool Multi Language", "Home Text Markup Level"],
+        answer: 0 },
+      { q: "Which CSS property changes the text color?",
+        options: ["font-style", "color", "text-size", "background"],
+        answer: 1 },
+      { q: "Which tag is used to link a JavaScript file?",
+        options: ["<link>", "<js>", "<script>", "<style>"],
+        answer: 2 },
+      { q: "Which symbol is used for an ID selector in CSS?",
+        options: [".", "*", "&", "#"],
+        answer: 3 },
+      { q: "Which method prints a message in the browser console?",
+        options: ["console.log()", "print()", "echo()", "write.console()"],
+        answer: 0 },
+      { q: "Which HTML tag creates the largest heading?",
+        options: ["<h6>", "<h1>", "<head>", "<heading>"],
+        answer: 1 },
+      { q: "Which HTML tag is used to create a hyperlink?",
+        options: ["<link>", "<href>", "<a>", "<url>"],
+        answer: 2 },
+      { q: "What does CSS stand for?",
+        options: ["Cascading Style Sheets", "Creative Style System", "Computer Style Sheets", "Colorful Style Sheets"],
+        answer: 0 },
+      { q: "Which JavaScript keyword declares a variable that cannot be reassigned?",
+        options: ["var", "let", "int", "const"],
+        answer: 3 },
+      { q: "Which HTML tag is used to insert an image?",
+        options: ["<img>", "<image>", "<pic>", "<src>"],
+        answer: 0 },
+      { q: "Which CSS property sets the space inside an element's border?",
+        options: ["margin", "border", "spacing", "padding"],
+        answer: 3 },
+      { q: "Which symbol starts a single-line comment in JavaScript?",
+        options: ["//", "<!-- -->", "#", "**"],
+        answer: 0 },
+      { q: "Which HTML attribute gives the path of an image?",
+        options: ["href", "alt", "src", "link"],
+        answer: 2 },
+      { q: "Which method selects an element by its ID in JavaScript?",
+        options: ["document.getElementById()", "document.getElement()", "document.selectId()", "document.findById()"],
+        answer: 0 },
+      { q: "Which CSS display value is used to create a flexbox layout?",
+        options: ["block", "inline", "none", "flex"],
+        answer: 3 }
+    ];
+
+    const qNo = document.getElementById("qNo");
+    const scoreNow = document.getElementById("scoreNow");
+    const bar = document.getElementById("bar");
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const nextBtn = document.getElementById("nextBtn");
+
+    let index = 0;    // current question number
+    let score = 0;
+
+    function showQuestion() {
+      const current = questions[index];
+      qNo.textContent = "Question " + (index + 1) + " / " + questions.length;
+      scoreNow.textContent = "Score: " + score;
+      bar.style.width = (index / questions.length) * 100 + "%";
+      questionEl.textContent = current.q;
+      optionsEl.innerHTML = "";
+      nextBtn.disabled = true;
+      nextBtn.textContent = index === questions.length - 1 ? "Finish" : "Next";
+
+      current.options.forEach((text, i) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.textContent = text;
+        btn.onclick = () => checkAnswer(i);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected) {
+      const correct = questions[index].answer;
+      const buttons = document.querySelectorAll(".option");
+
+      buttons.forEach((b) => (b.disabled = true));        // lock all options
+      buttons[correct].classList.add("correct");           // show right answer in green
+
+      if (selected === correct) {
+        score++;
+      } else {
+        buttons[selected].classList.add("wrong");          // wrong choice in red
+      }
+      scoreNow.textContent = "Score: " + score;
+      nextBtn.disabled = false;
+    }
+
+    nextBtn.onclick = () => {
+      index++;
+      if (index < questions.length) showQuestion();
+      else showResult();
+    };
+
+    function showResult() {
+      document.getElementById("quizBox").style.display = "none";
+      document.getElementById("result").style.display = "block";
+      document.getElementById("score").textContent = score + " / " + questions.length;
+
+      let msg = "Keep practicing!";
+      if (score === questions.length) msg = "Excellent! Perfect score!";
+      else if (score >= 10) msg = "Good job!";
+      else if (score >= 5) msg = "Not bad, keep practicing!";
+      document.getElementById("message").textContent = msg;
+    }
+
+    document.getElementById("restartBtn").onclick = () => {
+      index = 0;
+      score = 0;
+      document.getElementById("result").style.display = "none";
+      document.getElementById("quizBox").style.display = "block";
+      showQuestion();
+    };
+
+    showQuestion();
+  </script>
+</body>
+</html>
